@@ -1,4 +1,4 @@
-CrackStation.net's Hash Cracking Lookup Table Implementation
+[CrackStation.net](http://crackstation.net/)'s Lookup Tables
 ============================================================
 
 Introduction
@@ -24,14 +24,16 @@ C or C++.
 Indexing a Dictionary
 ---------------------
 
-Suppose you have a password dictionary in the file 'words.txt' and you would
+Suppose you have a password dictionary in the file `words.txt` and you would
 like to index it for MD5 and SHA1 cracking.
 
 First, create the MD5 and SHA1 indexes:
+
     $ php createidx.php md5 words.txt words-md5.idx
     $ php createidx.php sha1 words.txt words-sha1.idx
 
 Next, build the sortidx program and run it on the indexes.
+
     $ make
     $ ./sortidx -r 100 words-md5.idx
     $ ./sortidx -r 100 words-sha256.idx
