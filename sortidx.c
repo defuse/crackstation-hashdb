@@ -66,7 +66,7 @@ int main(int argc, char** argv)
 
     if(bufsize <= 0)
     {
-        printf("Invalid buffer size (%d).\n", bufsize);
+        printf("Invalid buffer size (%lld).\n", (long long)bufsize);
         printUsage();
         return 1;
     }
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
    
     if(sortBuffer == NULL)
     {
-        printf("Cannot allocate buffer (%d bytes).\n", bufsize);
+        printf("Cannot allocate buffer (%lld bytes).\n", (long long)bufsize);
         printUsage();
         return 1;
     }

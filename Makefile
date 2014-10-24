@@ -1,2 +1,2 @@
 sortdx:
-	gcc -O2 sortidx.c -o sortidx
+	gcc -Wall -O2 sortidx.c -o sortidx
