@@ -32,6 +32,8 @@
  *       you want more, just modify the code.
  */
 
+require_once('MoreHashes.php');
+
 if(PHP_INT_SIZE < 8)
 {
     echo "This script requires 64-bit PHP.\n";
@@ -44,12 +46,13 @@ if($argc < 4)
     die();
 }
 
-$hashType = strtolower($argv[1]);
+$hashType = $argv[1];
 $wordlistFile = $argv[2];
 $outputFile = $argv[3];
 
-if(!in_array($hashType, hash_algos()))
-{
+try {
+    $hasher = MoreHashAlgorithms::GetHashFunction($hashType);
+} catch (Exception $e) {
     echo "Unknown hash algorithm ($hashType)!\n";
     die();
 }
@@ -71,7 +74,7 @@ $position = ftell($wordlist);
 while(($word = fgets($wordlist)) !== FALSE)
 {
     $word = trim($word, "\n\r"); // Get rid of any extra newline characters, but don't get rid of spaces or tabs.
-    $hash = getFirst64Bits(hash($hashType, $word, true));
+    $hash = getFirst64Bits($hasher->hash($word, true));
     fwrite($index, $hash);
     fwrite($index, encodeTo48Bits($position));
 

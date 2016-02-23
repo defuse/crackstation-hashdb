@@ -14,6 +14,8 @@
 
 // TODO: Support partial matches
 
+require_once('MoreHashes.php');
+
 define("INDEX_ENTRY_SIZE", 6+8);
 
 class IndexFileException extends Exception {}
@@ -26,8 +28,7 @@ class LookupTable
 {
     private $index;
     private $dict;
-    private $hashtype;
-    private $builtin_hash;
+    private $hasher;
     private $cache = array();
     private $index_count;
 
@@ -36,11 +37,7 @@ class LookupTable
         if(PHP_INT_SIZE < 8)
             throw new Missing64BitException("This script needs 64-bit integers.");
 
-        $this->builtin_hash = in_array($hashtype, hash_algos());
-        if(!$this->isValidHashType($hashtype))
-            throw new InvalidHashTypeException('Unsupported hash type');
-
-        $this->hashtype = $hashtype;
+        $this->hasher = MoreHashAlgorithms::GetHashFunction($hashtype);
 
         $this->index = fopen($index_path, "rb");
         if($this->index === false)
@@ -98,7 +95,7 @@ class LookupTable
             {
                 $position = $this->getIdxPosition($this->index, $find);
                 $word = $this->getWordAt($this->dict, $position);
-                if($this->computeHash($this->hashtype, $word, true) === $hash_binary)
+                if($this->hasher->hash($word, true) === $hash_binary)
                 {
                     $results[] = $word;
                 }
@@ -137,7 +134,22 @@ class LookupTable
             return $this->cache[$index];
 
         fseek($file, $index * (6+8));
-        return ($this->cache[$index] = fread($file, 8));
+        $hash = fread($file, 8);
+        if (strlen($hash) == 8) {
+            $this->cache[$index] = $hash;
+            return $hash;
+        } elseif (strlen($hash) == 0) {
+            // FIXME: hack for hashcmp to fail when we reach EOF.
+            // This isn't guaranteed to be correct, but it probably
+            // works assuming the file is sorted and there's at least
+            // one non-zero hash!
+
+            // You can trigger this case by trying to crack the last hash in the
+            // index, e.g. run `xxd -c 14 whatever.idx`.
+            return "\x00\x00\x00\x00\x00\x00\x00\x00";
+        } else {
+            throw new Exception("Something is wrong with the index!");
+        }
     }
 
     private function getIdxPosition($file, $index)
@@ -169,103 +181,13 @@ class LookupTable
         return ftell($handle);
     }
 
-    private function isValidHashType($type)
-    {
-        return $this->computeHash($type, "", true) !== false;
-    }
-
     private function isValidHash($hash_str)
     {
         // Make sure the hash "looks right"
-        $sample = $this->computeHash($this->hashtype, "", false);
-        if($this->hashtype != "crypt" && strlen($sample) != strlen($hash_str))
-            return false;
-        return true;
+        $sample = $this->hasher->hash("", false);
+        return strlen($sample) === strlen($hash_str);
     }
 
-    private function computeHash($hash_type, $plaintext, $binary)
-    {
-        if($this->builtin_hash)
-        {
-            return hash($hash_type, $plaintext, $binary);
-        }
-        elseif($hash_type == "ntlm")
-        {
-            $hash = $this->NTLMHash($plaintext);
-            if($binary)
-                return $hash;
-            else
-                return bin2hex($hash);
-        }
-        elseif($hash_type == "md5md5")
-        {
-            return hash("md5", hash("md5", $plaintext), $binary);
-        }
-        elseif($hash_type == "mysql41")
-        {
-            return hash("sha1", hash("sha1", $plaintext, true), $binary);
-        }
-        elseif($hash_type == "lm")
-        {
-             $hash = $this->LMHash($plaintext);        
-             if($binary)
-                 return $hash;
-             else
-                 return bin2hex($hash);
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    // NTLM Code Source: http://www.php.net/manual/en/ref.hash.php#82018
-    private function NTLMHash($Input) {
-      // Convert the password from UTF8 to UTF16 (little endian)
-      $Input=@iconv('UTF-8','UTF-16LE',$Input);
-      $MD4Hash=hash('md4',$Input, true);
-      return $MD4Hash;
-    }
-
-    // LM Code Source: http://www.php.net/manual/en/ref.hash.php#84587
-    private function LMhash($string)
-    {
-        $string = strtoupper(substr($string,0,14));
-    
-        $p1 = $this->LMhash_DESencrypt(substr($string, 0, 7));
-        $p2 = $this->LMhash_DESencrypt(substr($string, 7, 7));
-    
-        return $p1.$p2;
-    }
-    
-    private function LMhash_DESencrypt($string)
-    {
-        $key = array();
-        $tmp = array();
-        $len = strlen($string);
-    
-        for ($i=0; $i<7; ++$i)
-            $tmp[] = $i < $len ? ord($string[$i]) : 0;
-    
-        $key[] = $tmp[0] & 254;
-        $key[] = ($tmp[0] << 7) | ($tmp[1] >> 1);
-        $key[] = ($tmp[1] << 6) | ($tmp[2] >> 2);
-        $key[] = ($tmp[2] << 5) | ($tmp[3] >> 3);
-        $key[] = ($tmp[3] << 4) | ($tmp[4] >> 4);
-        $key[] = ($tmp[4] << 3) | ($tmp[5] >> 5);
-        $key[] = ($tmp[5] << 2) | ($tmp[6] >> 6);
-        $key[] = $tmp[6] << 1;
-      
-        $is = mcrypt_get_iv_size(MCRYPT_DES, MCRYPT_MODE_ECB);
-        $iv = mcrypt_create_iv($is, MCRYPT_RAND);
-        $key0 = "";
-      
-        foreach ($key as $k)
-            $key0 .= chr($k);
-        $crypt = mcrypt_encrypt(MCRYPT_DES, $key0, "KGS!@#$%", MCRYPT_MODE_ECB, $iv);
-    
-        return $crypt;
-    }
 }
 
 ?>
