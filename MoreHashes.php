@@ -37,6 +37,7 @@ class LMHashAlgorithm implements HashAlgorithm
     private function LMhash($string)
     {
         $string = strtoupper(substr($string,0,14));
+        $string .= str_repeat("\x00", 14 - strlen($string));
 
         $p1 = $this->LMhash_DESencrypt(substr($string, 0, 7));
         $p2 = $this->LMhash_DESencrypt(substr($string, 7, 7));
@@ -46,29 +47,17 @@ class LMHashAlgorithm implements HashAlgorithm
 
     private function LMhash_DESencrypt($string)
     {
-        $key = array();
-        $tmp = array();
-        $len = strlen($string);
-
-        for ($i=0; $i<7; ++$i)
-            $tmp[] = $i < $len ? ord($string[$i]) : 0;
-
-        $key[] = $tmp[0] & 254;
-        $key[] = ($tmp[0] << 7) | ($tmp[1] >> 1);
-        $key[] = ($tmp[1] << 6) | ($tmp[2] >> 2);
-        $key[] = ($tmp[2] << 5) | ($tmp[3] >> 3);
-        $key[] = ($tmp[3] << 4) | ($tmp[4] >> 4);
-        $key[] = ($tmp[4] << 3) | ($tmp[5] >> 5);
-        $key[] = ($tmp[5] << 2) | ($tmp[6] >> 6);
-        $key[] = $tmp[6] << 1;
+        $key = "\x00\x00\x00\x00\x00\x00\x00\x00";
+        $key[0] = chr(ord($string[0]) & 254);
+        $key[1] = chr((ord($string[0]) << 7) | (ord($string[1]) >> 1));
+        $key[2] = chr((ord($string[1]) << 6) | (ord($string[2]) >> 2));
+        $key[3] = chr((ord($string[2]) << 5) | (ord($string[3]) >> 3));
+        $key[4] = chr((ord($string[3]) << 4) | (ord($string[4]) >> 4));
+        $key[5] = chr((ord($string[4]) << 3) | (ord($string[5]) >> 5));
+        $key[6] = chr((ord($string[5]) << 2) | (ord($string[6]) >> 6));
+        $key[7] = chr(ord($string[6]) << 1);
     
-        $is = mcrypt_get_iv_size(MCRYPT_DES, MCRYPT_MODE_ECB);
-        $iv = mcrypt_create_iv($is, MCRYPT_RAND);
-        $key0 = "";
-    
-        foreach ($key as $k)
-            $key0 .= chr($k);
-        $crypt = mcrypt_encrypt(MCRYPT_DES, $key0, "KGS!@#$%", MCRYPT_MODE_ECB, $iv);
+        $crypt = openssl_encrypt("KGS!@#$%", "des-ecb", $key, OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING);
 
         return $crypt;
     }
