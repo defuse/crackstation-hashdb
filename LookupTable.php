@@ -24,6 +24,40 @@ class InvalidHashTypeException extends Exception {}
 class HashFormatException extends Exception {}
 class Missing64BitException extends Exception {}
 
+class HashCrackResult
+{
+    private $plaintext;
+    private $given_hash_raw;
+    private $full_hash_raw;
+
+    function __construct($plaintext, $given_hash_raw, $full_hash_raw)
+    {
+        $this->plaintext = $plaintext;
+        $this->given_hash_raw = $given_hash_raw;
+        $this->full_hash_raw = $full_hash_raw;
+    }
+
+    public function isFullMatch()
+    {
+        return strtolower($this->given_hash_raw) === strtolower($this->full_hash_raw);
+    }
+
+    public function getPlaintext()
+    {
+        return $this->plaintext;
+    }
+
+    public function getGivenHashBytes()
+    {
+        return $this->given_hash_raw;
+    }
+
+    public function getRecomputedFullHashBytes()
+    {
+        return $this->full_hash_raw;
+    }
+}
+
 class LookupTable
 {
     private $index;
@@ -31,6 +65,11 @@ class LookupTable
     private $hasher;
     private $cache = array();
     private $index_count;
+
+    // The minimum length of prefix that needs to match for it to be considered
+    // a "partial match." This value must not be greater than 8, since only
+    // the 8 leading bytes of the hash are stored in the index.
+    const PARTIAL_MATCH_PREFIX_BYTES = 8;
 
     public function __construct($index_path, $dict_path, $hashtype)
     {
@@ -59,6 +98,11 @@ class LookupTable
         fclose($this->dict);
     }
     
+    /*
+     * Attempts to crack $hash by interpreting it as (the prefix of) a hash of
+     * the set type. Returns all partial matches, i.e. at least the first
+     * PARTIAL_MATCH_PREFIX_BYTES are in agreement, as a list of HashCrackResult.
+     */
     public function crack($hash)
     {
         $hash_binary = $this->getHashBinary($hash);
@@ -90,23 +134,18 @@ class LookupTable
                 $find--;
             $find++; // Get to start of block
 
-            // Walk through the block of collisions
+            // Walk through the block of collisions (partial and full matches)
             while($this->hashcmp($this->getIdxHash($this->index, $find), $hash_binary) == 0)
             {
                 $position = $this->getIdxPosition($this->index, $find);
                 $word = $this->getWordAt($this->dict, $position);
-                if($this->hasher->hash($word, true) === $hash_binary)
-                {
-                    $results[] = $word;
-                }
+                $full_hash_raw = $this->hasher->hash($word, true);
+                $results[] = new HashCrackResult($word, $hash_binary, $full_hash_raw);
                 $find++;
             }
         }
 
-        if(count($results) > 0)
-            return $results;
-        else
-            return false;
+        return $results;
     }
 
     private function getWordAt($file, $position)
@@ -118,7 +157,7 @@ class LookupTable
 
     private function hashcmp($hashA, $hashB)
     {
-        for($i = 0; $i < 8; $i++)
+        for($i = 0; $i < self::PARTIAL_MATCH_PREFIX_BYTES && $i < 8; $i++)
         {
             if($hashA[$i] < $hashB[$i])
                 return -1;
@@ -148,7 +187,7 @@ class LookupTable
             // index, e.g. run `xxd -c 14 whatever.idx`.
             return "\x00\x00\x00\x00\x00\x00\x00\x00";
         } else {
-            throw new Exception("Something is wrong with the index!");
+            throw new IndexFileException("Something is wrong with the index!");
         }
     }
 
@@ -167,11 +206,13 @@ class LookupTable
 
     private function getHashBinary($hash)
     {
-        if(!$this->isValidHash($hash))
-            throw new HashFormatException("Invalid hash");
+        if (preg_match('/^([A-Fa-f0-9]{2})+$/', $hash) !== 1) {
+            throw new HashFormatException("Hash is not a valid hex string.");
+        }
         $binary = pack("H*", $hash);
-        if(strlen($binary) < 8)
+        if(strlen($binary) < self::PARTIAL_MATCH_PREFIX_BYTES) {
             throw new HashFormatException("Hash too small");
+        }
         return $binary;
     }
 
@@ -179,13 +220,6 @@ class LookupTable
     {
         fseek($handle, 0, SEEK_END);
         return ftell($handle);
-    }
-
-    private function isValidHash($hash_str)
-    {
-        // Make sure the hash "looks right"
-        $sample = $this->hasher->hash("", false);
-        return strlen($sample) === strlen($hash_str);
     }
 
 }
