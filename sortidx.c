@@ -16,6 +16,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <time.h>
 
 #define DEFAULT_MEMORY 20 * 1024 * 1024 // 20MB
 #define INDEX_HASH_WIDTH 8
@@ -89,6 +90,8 @@ int main(int argc, char** argv)
         printUsage();
         return 1;
     }
+
+    srand((unsigned int) time(NULL));
 
     if(sortFile(index, sortBuffer, bufcount))
     {
@@ -187,7 +190,8 @@ int64_t partitionFile(FILE* file, int64_t lowerIdx, int64_t upperIdx)
     for(i = lowerIdx; i < upperIdx; i++) /* Should be <, put <= to test */
     {
          freadIndexEntryAt(file, i, &tmp);
-         if(hashcmp(tmp.hash, pivot.hash) < 0)
+         int cmp = hashcmp(tmp.hash, pivot.hash);
+         if(cmp < 0 || (cmp == 0 && (rand() & 2) == 0))
          {
             /* Swap i-th and storeIndex */
             freadIndexEntryAt(file, storeIndex, &tmp2);
@@ -247,7 +251,8 @@ int64_t partitionMemory(struct IndexEntry *sortBuffer, int64_t lowerIdx, int64_t
     struct IndexEntry tmp;
     for(i = lowerIdx; i < upperIdx; i++)
     {
-        if(hashcmp(sortBuffer[i].hash, pivotValue.hash) < 0)
+        int cmp = hashcmp(sortBuffer[i].hash, pivotValue.hash);
+        if(cmp < 0 || (cmp == 0 && (rand() & 2) == 0))
         {
             tmp = sortBuffer[i];
             sortBuffer[i] = sortBuffer[storeIndex];
