@@ -22,15 +22,30 @@ if ($fh === false) {
 
 while (($line = fgets($fh)) !== false) {
     $word = rtrim($line, "\r\n");
+
+    // Full match.
     $to_crack = $hasher->hash($word, false);
     $results = $lookup->crack($to_crack);
-    if (count($results) !== 1 || $results[0]->getPlaintext() !== "$word") {
+    if (count($results) !== 1 || $results[0]->getPlaintext() !== "$word" || $results[0]->isFullMatch() !== true) {
         echo "FAILURE: Expected to crack [$word] but did not.\n";
         exit(1);
     } else {
         $cracked = $results[0]->getPlaintext();
         echo "Successfully cracked [$cracked].\n";
     }
+
+    // Partial match (first 8 bytes, 16 hex chars).
+    $to_crack = substr($to_crack, 0, 16);
+    $results = $lookup->crack($to_crack);
+
+    if (count($results) !== 1 || $results[0]->getPlaintext() !== "$word" || $results[0]->isFullMatch() !== false) {
+        echo "FAILURE: Expected to crack [$word] (as partial match) but did not.\n";
+        exit(1);
+    } else {
+        $cracked = $results[0]->getPlaintext();
+        echo "Successfully cracked [$cracked] (as partial match).\n";
+    }
+
 }
 
 fclose($fh);
