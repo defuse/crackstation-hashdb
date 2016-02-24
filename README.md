@@ -54,8 +54,6 @@ Adding Words
 
 Once a wordlist has been indexed, you can not modify the wordlist file without
 breaking the indexes. Appending to the wordlist is safe in that it will not
-break the indexes, but the words you append (obviously) won't be indexed,
-unless you re-generate the index. 
-
-There is currently no way to add words to an index without re-generating the
-entire index.
+break the indexes, but the words you append  won't be indexed, unless you
+re-generate the index. There is currently no way to add words to an index
+without re-generating the entire index.
