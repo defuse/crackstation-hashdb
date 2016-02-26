@@ -34,7 +34,6 @@ void writeBufferToFile(FILE* file, struct IndexEntry* buffer, int64_t lowerIdx, 
 
 int main(int argc, char** argv)
 {
-    int i;
     int64_t bufsize = DEFAULT_MEMORY;
     int64_t bufcount = 0;
     FILE *index = NULL;
