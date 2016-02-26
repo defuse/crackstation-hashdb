@@ -2,7 +2,7 @@
 
 all: sortidx checksort
 
-sortdx: sortidx.c
+sortidx: sortidx.c
 	gcc -Wall -O3 sortidx.c -o sortidx
 
 checksort: checksort.c
