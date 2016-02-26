@@ -10,11 +10,11 @@ if (count($argv) !== 2) {
 }
 
 $hash = $argv[1];
-$lookup = new LookupTable("words-$hash.idx", "words.txt", $hash);
+$lookup = new LookupTable("test-index-files/test-words-$hash.idx", "test/words.txt", $hash);
 
 $hasher = MoreHashAlgorithms::GetHashFunction($hash);
 
-$fh = fopen("words.txt", "r");
+$fh = fopen("test/words.txt", "r");
 if ($fh === false) {
     echo "Error opening words.txt";
     exit(1);
