@@ -1,31 +1,17 @@
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
-
 
 #define INDEX_HASH_WIDTH 8
 #define INDEX_POSITION_WIDTH 6
 #define INDEX_ENTRY_WIDTH (INDEX_HASH_WIDTH + INDEX_POSITION_WIDTH)
 
 struct IndexEntry {
+    /* The leading 64 bits of the hash. */
     unsigned char hash[INDEX_HASH_WIDTH]; // First 64 bits of the hash
     unsigned char position[INDEX_POSITION_WIDTH]; // Position of word in dictionary (48-bit little endian integer)
 };
-
 
 void freadIndexEntryAt(FILE* file, int64_t index, struct IndexEntry* out)
 {

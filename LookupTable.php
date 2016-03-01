@@ -12,8 +12,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-// TODO: Support partial matches
-
 require_once('MoreHashes.php');
 
 define("INDEX_ENTRY_SIZE", 6+8);
