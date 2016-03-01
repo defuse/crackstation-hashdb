@@ -27,12 +27,14 @@ class HashCrackResult
     private $plaintext;
     private $given_hash_raw;
     private $full_hash_raw;
+    private $algorithm_name;
 
-    function __construct($plaintext, $given_hash_raw, $full_hash_raw)
+    function __construct($plaintext, $given_hash_raw, $full_hash_raw, $algorithm_name)
     {
         $this->plaintext = $plaintext;
         $this->given_hash_raw = $given_hash_raw;
         $this->full_hash_raw = $full_hash_raw;
+        $this->algorithm_name = $algorithm_name;
     }
 
     public function isFullMatch()
@@ -53,6 +55,11 @@ class HashCrackResult
     public function getRecomputedFullHashBytes()
     {
         return $this->full_hash_raw;
+    }
+
+    public function getAlgorithmName()
+    {
+        return $this->algorithm_name;
     }
 }
 
@@ -138,7 +145,12 @@ class LookupTable
                 $position = $this->getIdxPosition($this->index, $find);
                 $word = $this->getWordAt($this->dict, $position);
                 $full_hash_raw = $this->hasher->hash($word, true);
-                $results[] = new HashCrackResult($word, $hash_binary, $full_hash_raw);
+                $results[] = new HashCrackResult(
+                    $word,
+                    $hash_binary,
+                    $full_hash_raw,
+                    $this->hasher->getAlgorithmName()
+                );
                 $find++;
             }
         }

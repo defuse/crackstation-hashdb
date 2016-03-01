@@ -3,6 +3,7 @@
 interface HashAlgorithm
 {
     public function hash($input, $raw);
+    public function getAlgorithmName();
 }
 
 class StandardHashAlgorithm implements HashAlgorithm
@@ -20,6 +21,11 @@ class StandardHashAlgorithm implements HashAlgorithm
     public function hash($input, $raw)
     {
         return hash($this->algorithm, $input, $raw);
+    }
+
+    public function getAlgorithmName()
+    {
+        return $this->algorithm;
     }
 }
 
@@ -61,6 +67,11 @@ class LMHashAlgorithm implements HashAlgorithm
 
         return $crypt;
     }
+
+    public function getAlgorithmName()
+    {
+        return "LM";
+    }
 }
 
 class NTLMHashAlgorithm implements HashAlgorithm
@@ -72,6 +83,11 @@ class NTLMHashAlgorithm implements HashAlgorithm
         $MD4Hash=hash('md4',$input, $raw);
         return $MD4Hash;
     }
+
+    public function getAlgorithmName()
+    {
+        return "NTLM";
+    }
 }
 
 class MD5MD5HexHashAlgorithm implements HashAlgorithm
@@ -80,6 +96,11 @@ class MD5MD5HexHashAlgorithm implements HashAlgorithm
     {
         return hash("md5", hash("md5", $input, false), $raw);
     }
+
+    public function getAlgorithmName()
+    {
+        return "md5(md5)";
+    }
 }
 
 class MySQL41HashAlgorithm implements HashAlgorithm
@@ -87,6 +108,11 @@ class MySQL41HashAlgorithm implements HashAlgorithm
     public function hash($input, $raw)
     {
         return hash("sha1", hash("sha1", $input, true), $raw);
+    }
+
+    public function getAlgorithmName()
+    {
+        return "MySQL4.1+";
     }
 }
 

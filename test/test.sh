@@ -6,7 +6,7 @@ set -e
 make clean
 make all
 
-hashTypes=( "md5" "sha1" "NTLM" "LM" "MySQL4.1+" "md5(md5)" )
+hashTypes=( "md5" "sha1" "NTLM" "LM" "MySQL4.1+" "md5(md5)" "whirlpool" )
 
 mkdir -p test-index-files
 
