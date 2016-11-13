@@ -116,11 +116,25 @@ class MySQL41HashAlgorithm implements HashAlgorithm
     }
 }
 
+class QubesV31BackupDefaultsHashAlgorithm implements HashAlgorithm
+{
+    public function hash($input, $raw)
+    {
+        $default_backup_header = "version=3\nhmac-algorithm=SHA512\ncrypto-algorithm=aes-256-cbc\nencrypted=True\ncompressed=False\n";
+        return hash_hmac("sha512", $default_backup_header, $input, $raw);
+    }
+
+    public function getAlgorithmName()
+    {
+        return "QubesV31DefaultBackup";
+    }
+}
+
 class MoreHashAlgorithms
 {
     public static function GetHashAlgoNames()
     {
-        $extra_algos = array('LM', 'NTLM', 'md5(md5)', 'MySQL4.1+');
+        $extra_algos = array('LM', 'NTLM', 'md5(md5)', 'MySQL4.1+', 'QubesV3.1BackupDefaults');
         return array_merge(hash_algos(), $extra_algos);
     }
 
@@ -141,6 +155,9 @@ class MoreHashAlgorithms
                 break;
             case "MySQL4.1+":
                 return new MySQL41HashAlgorithm();
+                break;
+            case "QubesV3.1BackupDefaults":
+                return new QubesV31BackupDefaultsHashAlgorithm();
                 break;
             default:
                 throw new Exception("Unknown algorithm name.");
