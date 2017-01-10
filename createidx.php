@@ -109,11 +109,9 @@ function getFirst64Bits($binaryHash)
 {
     $wantlength =  8; // 8 Bytes = 64 bits.
     $getlength = 8;
-    if(strlen($binaryHash) < $getlength)
-        $getlength = strlen($binaryHash);
-    $result = substr($binaryHash, 0, $getlength);
-    if($getlength < $wantlength)
-        $result .= str_repeat('\0', $wantlength - $getlength);
+
+    $result = str_pad(substr($binaryHash, 0, $getlength), $wantlength, "\0");
+
     return $result;
 }
 
