@@ -77,6 +77,7 @@ while(($word = fgets($wordlist)) !== FALSE)
     $hash = $hasher->hash($word, true);
     if ($hash === false) {
         echo "Skipping word [" . bin2hex($word) . "] (hex encoded) because it is not a valid input for this hash.\n";
+        continue;
     }
     $hash = getFirst64Bits($hasher->hash($word, true));
     fwrite($index, $hash);
