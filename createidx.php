@@ -74,6 +74,10 @@ $position = ftell($wordlist);
 while(($word = fgets($wordlist)) !== FALSE)
 {
     $word = trim($word, "\n\r"); // Get rid of any extra newline characters, but don't get rid of spaces or tabs.
+    $hash = $hasher->hash($word, true);
+    if ($hash === false) {
+        echo "Skipping word [" . bin2hex($word) . "] (hex encoded) because it is not a valid input for this hash.\n";
+    }
     $hash = getFirst64Bits($hasher->hash($word, true));
     fwrite($index, $hash);
     fwrite($index, encodeTo48Bits($position));

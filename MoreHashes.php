@@ -80,6 +80,9 @@ class NTLMHashAlgorithm implements HashAlgorithm
     {
         // Convert the password from UTF8 to UTF16 (little endian)
         $input=@iconv('UTF-8','UTF-16LE',$input);
+        if ($input === false) {
+            return false;
+        }
         $MD4Hash=hash('md4',$input, $raw);
         return $MD4Hash;
     }
