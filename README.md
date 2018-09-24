@@ -57,6 +57,23 @@ Cracking Hashes
 Once you have generated and sorted the index, you can use the LookupTable class
 to crack hashes. See test/test.php for an example of how to use it.
 
+Lookup By Hash
+--------------
+
+A new program under test/ called lookup_hash.php is usable after running make test.
+Example run:
+
+    $ php test/lookup_hash.php sha1
+    To exit type: quit
+    Enter hash: e68e11be8b70e435c65aef8ba9798ff7775c361e
+    e68e11be8b70e435c65aef8ba9798ff7775c361e:trustno1
+    e68e11be8b70e435:trustno1 (partial match)
+    To exit type: quit
+    Enter hash: quit
+
+TODO: Add option to read list of hashes from file and output results.
+Clean up interface, print "To exit type: quit" once only.
+
 Adding Words
 ------------
 
