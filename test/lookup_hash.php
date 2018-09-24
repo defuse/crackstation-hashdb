@@ -11,7 +11,6 @@ if (count($argv) !== 2) {
 }
 
 function menu() {
-	echo "To exit type: quit\n";
 	echo "Enter hash: ";
 	$hash = readline();
 	return $hash;
@@ -21,6 +20,8 @@ $hash_algorithm = $argv[1];
 $lookup = new LookupTable("test-index-files/test-words-$hash_algorithm.idx", "test/words.txt", $hash_algorithm);
 
 $hasher = MoreHashAlgorithms::GetHashFunction($hash_algorithm);
+
+echo "To exit type: quit\n";
 
 $to_crack = "";
 while ( ($to_crack = menu()) !== "quit") {
