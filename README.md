@@ -70,21 +70,26 @@ Example run:
     e68e11be8b70e435:trustno1 (partial match)
     Enter hash: quit
 
-lookup_hash.php also accepts a file name of hashes.  For example:
 
-    $ php test/lookup_hash.php sha1 test/sha1_hashes.txt
-    D0BE2DC421BE4FCD0172E5AFCEEA3970E2F3D940:apple
-    D0BE2DC421BE4FCD:apple (partial match)
-    250E77F12A5AB6972A0895D290C4792F0A326EA8:banana
-    250E77F12A5AB697:banana (partial match)
-    B081F21CD313C2DE90142B4E815BE841AEA0A897:minions
-    B081F21CD313C2DE:minions (partial match)
-    E68E11BE8B70E435C65AEF8BA9798FF7775C361E:trustno1
-    E68E11BE8B70E435:trustno1 (partial match)
-    8A4403E154C81595E2859F9C5559B9FFF6C610C3:123456Seven
-    8A4403E154C81595:123456Seven (partial match)
-    Nothing for sha1:6DB82964033D81A17884BDD215C407D12FBDD282
-    Nothing for sha1:6DB82964033D81A1
+Tests for lookup by hash
+------------------------
+
+    $ make test
+    $ cd test
+    $ php createhashlists.php  <<< This creates lists of hashes in md5, md5(md5), ntlm, sha1 and whirlpool, default file names below
+    $ cd ../
+    $ php test/lookup_hash.php "md5" test/md5_hashes.txt
+    $ php test/lookup_hash.php "md5(md5)" test/md5md5_hashes.txt
+    $ php test/lookup_hash.php "ntlm" test/ntlm_hashes.txt
+    $ php test/lookup_hash.php "whirlpool" test/whirlpool_hashes.txt
+    $ php test/lookup_hash.php "sha1" test/sha1_hashes.txt
+    
+The lookup_hash.php script can also be run in interactive mode.
+
+    $ php test/lookup_hash.php sha1
+    $ php test/lookup_hash.php ntlm
+    
+etc.
 
 
 Adding Words
