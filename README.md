@@ -57,6 +57,41 @@ Cracking Hashes
 Once you have generated and sorted the index, you can use the LookupTable class
 to crack hashes. See test/test.php for an example of how to use it.
 
+Lookup By Hash
+--------------
+
+A new program under test/ called lookup_hash.php is usable after running make test.
+Example run:
+
+    $ php test/lookup_hash.php sha1
+    To exit type: quit
+    Enter hash: e68e11be8b70e435c65aef8ba9798ff7775c361e
+    e68e11be8b70e435c65aef8ba9798ff7775c361e:trustno1
+    e68e11be8b70e435:trustno1 (partial match)
+    Enter hash: quit
+
+
+Tests for lookup by hash
+------------------------
+
+    $ make test
+    $ cd test
+    $ php createhashlists.php  <<< This creates lists of hashes in md5, md5(md5), ntlm, sha1 and whirlpool, default file names below
+    $ cd ../
+    $ php test/lookup_hash.php "md5" test/md5_hashes.txt
+    $ php test/lookup_hash.php "md5(md5)" test/md5md5_hashes.txt
+    $ php test/lookup_hash.php "ntlm" test/ntlm_hashes.txt
+    $ php test/lookup_hash.php "whirlpool" test/whirlpool_hashes.txt
+    $ php test/lookup_hash.php "sha1" test/sha1_hashes.txt
+    
+The lookup_hash.php script can also be run in interactive mode.
+
+    $ php test/lookup_hash.php sha1
+    $ php test/lookup_hash.php ntlm
+    
+etc.
+
+
 Adding Words
 ------------
 
